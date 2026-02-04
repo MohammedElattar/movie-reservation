@@ -1,5 +1,5 @@
-// Package http
-package http
+// Package router
+package router
 
 import (
 	"net/http"
@@ -12,6 +12,7 @@ import (
 
 func NewRouter(
 	cfg *config.Config,
+	jsonResponse *handlers.JsonResponse,
 	userHandler *handlers.UserHandler,
 ) http.Handler {
 	router := httprouter.New()
@@ -25,8 +26,8 @@ func NewRouter(
 	// Auth Routes
 	router.POST(
 		"/auth/register",
-		middleware.NewPipeline(userHandler.Register, cfg).
-			Through(middleware.GlobalMiddlewares...).
+		middleware.NewPipeline(userHandler.Register, cfg, jsonResponse).
+			Through(middleware.GlobalMiddlewares(nil)...).
 			Return(),
 	)
 

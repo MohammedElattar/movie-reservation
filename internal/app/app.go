@@ -16,8 +16,8 @@ import (
 	"github.com/MohammedElattar/movie-reservation/internal/domain/user"
 	portsLogger "github.com/MohammedElattar/movie-reservation/internal/ports/logger"
 	"github.com/MohammedElattar/movie-reservation/internal/ports/storage"
-	httpTransport "github.com/MohammedElattar/movie-reservation/internal/transport/http"
 	"github.com/MohammedElattar/movie-reservation/internal/transport/http/handlers"
+	"github.com/MohammedElattar/movie-reservation/internal/transport/http/router"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18/ar"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18/en"
@@ -74,6 +74,12 @@ func New(cfg *config.Config) (*App, error) {
 	postgresStore := postgres.NewPostgresStore(pool)
 
 	// ----------------------------
+	// JSON Response Writer
+	// ----------------------------
+
+	jsonResponse := handlers.NewJsonResponseWriter(b)
+
+	// ----------------------------
 	// Repositories (Adapters)
 	// ----------------------------
 	userRepo := postgres.NewUserRepository(postgresStore)
@@ -86,8 +92,13 @@ func New(cfg *config.Config) (*App, error) {
 	// ----------------------------
 	// HTTP Transport
 	// ----------------------------
-	userHandler := handlers.NewUserHandler(userService, log, b)
-	router := httpTransport.NewRouter(cfg, userHandler)
+	userHandler := handlers.NewUserHandler(
+		userService,
+		log,
+		b,
+		jsonResponse,
+	)
+	router := router.NewRouter(cfg, jsonResponse, userHandler)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.AppPort),

@@ -5,12 +5,13 @@ import (
 	"strings"
 
 	"github.com/MohammedElattar/movie-reservation/internal/config"
+	"github.com/MohammedElattar/movie-reservation/internal/transport/http/handlers"
 	"github.com/MohammedElattar/movie-reservation/internal/transport/http/locale"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18"
 	"github.com/julienschmidt/httprouter"
 )
 
-func Locale(next httprouter.Handle, cfg *config.Config) httprouter.Handle {
+func Locale(next httprouter.Handle, cfg *config.Config, _ *handlers.JsonResponse) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		lang := detectLocale(r, i18.Locale(cfg.App.FallbackLocale))
 

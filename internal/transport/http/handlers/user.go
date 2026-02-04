@@ -2,7 +2,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/MohammedElattar/movie-reservation/internal/domain/user"
@@ -16,17 +15,20 @@ type UserHandler struct {
 	loginService *user.LoginService
 	log          portsLogger.Logger
 	i18          *i18.Bundle
+	jsonResponse *JsonResponse
 }
 
 func NewUserHandler(
 	loginService *user.LoginService,
 	log portsLogger.Logger,
 	i18 *i18.Bundle,
+	jsonResponse *JsonResponse,
 ) *UserHandler {
 	return &UserHandler{
 		loginService: loginService,
 		log:          log,
 		i18:          i18,
+		jsonResponse: jsonResponse,
 	}
 }
 
@@ -37,5 +39,9 @@ func (h *UserHandler) Register(
 ) {
 	word := h.i18.Success(locale.FromContext(r.Context()), "name", "created")
 
-	fmt.Println(word)
+	h.jsonResponse.CreatedResponse(r.Context(), w, struct {
+		Message string
+	}{
+		Message: word,
+	})
 }
