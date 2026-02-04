@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  postgres-movie-reservation:
+    container_name: postgres-movie-reservation
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: movie_reservation
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 12345678
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_movie_reservation_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - movie-reservation-network
+
+volumes:
+  postgres_movie_reservation_data:
+    name: postgres_movie_reservation_data
+
+networks:
+  movie-reservation-network:
+    name: movie-reservation-network
