@@ -17,10 +17,12 @@ import (
 	portsLogger "github.com/MohammedElattar/movie-reservation/internal/ports/logger"
 	"github.com/MohammedElattar/movie-reservation/internal/ports/storage"
 	"github.com/MohammedElattar/movie-reservation/internal/transport/http/handlers"
+	"github.com/MohammedElattar/movie-reservation/internal/transport/http/httpresponse"
 	"github.com/MohammedElattar/movie-reservation/internal/transport/http/router"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18/ar"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18/en"
+	middlewareContext "github.com/MohammedElattar/movie-reservation/internal/transport/http/context"
 )
 
 type App struct {
@@ -77,7 +79,7 @@ func New(cfg *config.Config) (*App, error) {
 	// JSON Response Writer
 	// ----------------------------
 
-	jsonResponse := handlers.NewJsonResponseWriter(b)
+	jsonResponse := httpresponse.NewJsonResponseWriter(b)
 
 	// ----------------------------
 	// Repositories (Adapters)
@@ -92,18 +94,14 @@ func New(cfg *config.Config) (*App, error) {
 	// ----------------------------
 	// HTTP Transport
 	// ----------------------------
-	userHandler := handlers.NewUserHandler(
-		userService,
-		log,
-		b,
-		jsonResponse,
-	)
-	router := router.NewRouter(cfg, jsonResponse, userHandler)
+	mwctx := middlewareContext.NewContext(b, log, jsonResponse, cfg)
+	userHandler := handlers.NewUserHandler(userService, mwctx)
+	router := router.NewRouter(userHandler, mwctx)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.AppPort),
 		Handler: router,
-	}
+}
 
 	return &App{
 		Logger:        log,

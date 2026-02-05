@@ -10,5 +10,6 @@ func registerMessages(b *i18.Bundle) {
 		"data_fetched":        "Data fetched successfully",
 		"post_size_too_large": "The request is too large. Reduce the payload or file size.",
 		"too_many_requests":   "You have sent too many requests in a short period. Please wait and try again later.",
+		"success_operation": "Operation has been made successfully",
 	})
 }

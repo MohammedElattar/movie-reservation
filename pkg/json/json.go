@@ -1,7 +1,11 @@
 // Package json
 package json
 
-import "github.com/bytedance/sonic"
+import (
+	"net/http"
+
+	"github.com/bytedance/sonic"
+)
 
 func Marshal(v any) ([]byte, error) {
 	return sonic.Marshal(v)
@@ -17,4 +21,8 @@ func Unmarshal(buf []byte, val any) error {
 
 func UnmarshalString(buf string, val any) error {
 	return sonic.UnmarshalString(buf, val)
+}
+
+func NewEncoder(w http.ResponseWriter) sonic.Encoder{
+	return sonic.ConfigDefault.NewEncoder(w)
 }

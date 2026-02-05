@@ -1,10 +1,9 @@
-package handlers
+// Package httpresponse
+package httpresponse
 
 import (
 	"context"
 	"net/http"
-	"time"
-
 	"github.com/MohammedElattar/movie-reservation/internal/transport/http/locale"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18"
 	"github.com/MohammedElattar/movie-reservation/pkg/json"
@@ -136,49 +135,21 @@ func streamedResponse(
 		Errors:  errors,
 	}
 
-	buf, err := json.Marshal(response)
-	if err != nil {
-		panic(err)
-	}
-
-	// Set headers
+	// Headers
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Accel-Buffering", "no")
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0")
-	w.WriteHeader(int(code))
+	w.Header().Set("X-Accel-Buffering", "no")
+	w.WriteHeader(code)
 
-	// Convert to JSON string
-	// Stream in chunks
-	chunkSize := 8192
-	length := len(buf)
-	offset := 0
+	enc := json.NewEncoder(w)
 
-	// Get the flusher
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		// If flushing is not supported, just write all at once
-		_, err = w.Write(buf)
-		if err != nil {
-			panic(err)
-		}
-
+	if err := enc.Encode(response); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return
 	}
 
-	for offset < length {
-		end := offset + chunkSize
-		if end > length {
-			end = length
-		}
-
-		_, err = w.Write(buf[offset:end])
-		if err != nil {
-			panic(err)
-		}
-
+	// Flush if supported
+	if flusher, ok := w.(http.Flusher); ok {
 		flusher.Flush()
-
-		offset += chunkSize
-		time.Sleep(1 * time.Millisecond)
 	}
 }

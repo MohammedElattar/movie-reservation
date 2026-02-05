@@ -1,25 +1,23 @@
 package middleware
 
 import (
-	"github.com/MohammedElattar/movie-reservation/internal/config"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/handlers"
+	"github.com/MohammedElattar/movie-reservation/internal/transport/http/context"
 	"github.com/julienschmidt/httprouter"
 )
 
 type Pipeline struct {
+	ctx *context.MiddlewareContext
 	handler httprouter.Handle
-	cfg     *config.Config
-	jsonResponse *handlers.JsonResponse
 }
 
 
-func NewPipeline(handler httprouter.Handle, cfg *config.Config, jsonResponse *handlers.JsonResponse) *Pipeline {
-	return &Pipeline{cfg: cfg, handler: handler, jsonResponse: jsonResponse}
+func NewPipeline(handler httprouter.Handle, ctx *context.MiddlewareContext) *Pipeline {
+	return &Pipeline{ctx: ctx, handler: handler}
 }
 
 func (p *Pipeline) Through(mws ...Middleware) *Pipeline {
 	for i := len(mws) - 1; i >= 0; i-- {
-		p.handler = mws[i](p.handler, p.cfg, p.jsonResponse)
+		p.handler = mws[i](p.handler, p.ctx)
 	}
 
 	return p

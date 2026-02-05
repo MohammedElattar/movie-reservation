@@ -2,13 +2,12 @@
 package middleware
 
 import (
-	"github.com/MohammedElattar/movie-reservation/internal/config"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/handlers"
+	"github.com/MohammedElattar/movie-reservation/internal/transport/http/context"
 	"github.com/julienschmidt/httprouter"
 )
 
 type (
-	Middleware func(next httprouter.Handle, cfg *config.Config, jsonResponse *handlers.JsonResponse) httprouter.Handle
+	Middleware func(next httprouter.Handle, ctx *context.MiddlewareContext) httprouter.Handle
 )
 
 var globalMiddlewares = []Middleware{
@@ -22,5 +21,5 @@ func GlobalMiddlewares(ignoreGlobalLimiter *struct{}) []Middleware {
 		return globalMiddlewares
 	}
 
-	return append(globalMiddlewares, RateLimiter(1, 0))
+	return append(globalMiddlewares, RateLimiter(1, 60))
 }
