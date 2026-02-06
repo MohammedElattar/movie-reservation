@@ -10,19 +10,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/MohammedElattar/movie-reservation/internal/adapters/logger"
-	"github.com/MohammedElattar/movie-reservation/internal/adapters/storage/postgres"
 	"github.com/MohammedElattar/movie-reservation/internal/config"
 	"github.com/MohammedElattar/movie-reservation/internal/domain/user"
+	"github.com/MohammedElattar/movie-reservation/internal/infrastructure/logger"
+	"github.com/MohammedElattar/movie-reservation/internal/infrastructure/storage/postgres"
 	portsLogger "github.com/MohammedElattar/movie-reservation/internal/ports/logger"
 	"github.com/MohammedElattar/movie-reservation/internal/ports/storage"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/handlers"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/httpresponse"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/router"
+	httpTransport "github.com/MohammedElattar/movie-reservation/internal/transport/http"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18/ar"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18/en"
-	middlewareContext "github.com/MohammedElattar/movie-reservation/internal/transport/http/context"
 )
 
 type App struct {
@@ -79,7 +76,7 @@ func New(cfg *config.Config) (*App, error) {
 	// JSON Response Writer
 	// ----------------------------
 
-	jsonResponse := httpresponse.NewJsonResponseWriter(b)
+	jsonResponse := httpTransport.NewJsonResponseWriter(b)
 
 	// ----------------------------
 	// Repositories (Adapters)
@@ -94,14 +91,14 @@ func New(cfg *config.Config) (*App, error) {
 	// ----------------------------
 	// HTTP Transport
 	// ----------------------------
-	mwctx := middlewareContext.NewContext(b, log, jsonResponse, cfg)
-	userHandler := handlers.NewUserHandler(userService, mwctx)
-	router := router.NewRouter(userHandler, mwctx)
+	mwctx := httpTransport.NewMiddlewareContext(b, log, jsonResponse, cfg)
+	userHandler := httpTransport.NewUserHandler(userService, mwctx)
+	router := httpTransport.NewRouter(userHandler, mwctx)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.AppPort),
 		Handler: router,
-}
+	}
 
 	return &App{
 		Logger:        log,
@@ -114,9 +111,7 @@ func New(cfg *config.Config) (*App, error) {
 
 // Run starts the HTTP server and handles graceful shutdown
 func (a *App) Run() error {
-	a.Logger.Info("starting server",
-		portsLogger.String("addr", a.Server.Addr),
-	)
+	a.Logger.Info(fmt.Sprintf("starting server on %s", a.Server.Addr))
 
 	go func() {
 		if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

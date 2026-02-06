@@ -1,14 +1,13 @@
-package middleware
+package http
 
 import (
 	"net/http"
 	"os"
 
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/context"
 	"github.com/julienschmidt/httprouter"
 )
 
-func AddSecurityHeaders(next httprouter.Handle, ctx *context.MiddlewareContext) httprouter.Handle {
+func AddSecurityHeaders(next httprouter.Handle, ctx *MiddlewareContext) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		// Prevent clickjacking
 		w.Header().Set("X-Frame-Options", "DENY")

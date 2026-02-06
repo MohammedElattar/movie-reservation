@@ -1,13 +1,12 @@
 // Package middleware
-package middleware
+package http
 
 import (
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/context"
 	"github.com/julienschmidt/httprouter"
 )
 
 type (
-	Middleware func(next httprouter.Handle, ctx *context.MiddlewareContext) httprouter.Handle
+	Middleware func(next httprouter.Handle, ctx *MiddlewareContext) httprouter.Handle
 )
 
 var globalMiddlewares = []Middleware{

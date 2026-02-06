@@ -1,20 +1,18 @@
-package middleware
+package http
 
 import (
 	"net/http"
 	"strings"
 
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/context"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/locale"
 	"github.com/MohammedElattar/movie-reservation/pkg/i18"
 	"github.com/julienschmidt/httprouter"
 )
 
-func Locale(next httprouter.Handle, ctx *context.MiddlewareContext) httprouter.Handle {
+func Locale(next httprouter.Handle, ctx *MiddlewareContext) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		lang := detectLocale(r, i18.Locale(ctx.Cfg.App.FallbackLocale))
 
-		ctx := locale.WithLocale(r.Context(), lang)
+		ctx := WithLocale(r.Context(), lang)
 
 		r = r.WithContext(ctx)
 

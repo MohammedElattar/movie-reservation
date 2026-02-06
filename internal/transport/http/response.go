@@ -1,10 +1,10 @@
-// Package httpresponse
-package httpresponse
+package http
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/locale"
+
 	"github.com/MohammedElattar/movie-reservation/pkg/i18"
 	"github.com/MohammedElattar/movie-reservation/pkg/json"
 )
@@ -49,7 +49,7 @@ func (res *JsonResponse) CreatedResponse(ctx context.Context, w http.ResponseWri
 	streamedResponse(
 		w,
 		data,
-		res.I18.Word(locale.FromContext(ctx), "resource_created"),
+		res.I18.Word(LocaleFromContext(ctx), "resource_created"),
 		http.StatusCreated,
 		nil,
 	)
@@ -59,7 +59,7 @@ func (res *JsonResponse) ResourceResponse(ctx context.Context, w http.ResponseWr
 	streamedResponse(
 		w,
 		data,
-		res.I18.Word(locale.FromContext(ctx), "data_fetched"),
+		res.I18.Word(LocaleFromContext(ctx), "data_fetched"),
 		http.StatusOK,
 		nil,
 	)
@@ -69,7 +69,7 @@ func (res *JsonResponse) OkResponse(ctx context.Context, w http.ResponseWriter, 
 	var msg string
 
 	if message == nil {
-		msg = res.I18.Word(locale.FromContext(ctx), "success_operation")
+		msg = res.I18.Word(LocaleFromContext(ctx), "success_operation")
 	} else {
 		msg = *message
 	}
@@ -87,7 +87,7 @@ func (res JsonResponse) PaginatedResponse(ctx context.Context, w http.ResponseWr
 	streamedResponse(
 		w,
 		data,
-		res.I18.Word(locale.FromContext(ctx), "data_fetched"),
+		res.I18.Word(LocaleFromContext(ctx), "data_fetched"),
 		http.StatusOK,
 		nil,
 	)
@@ -112,12 +112,14 @@ func baseResponse(
 
 	buf, err := json.Marshal(response)
 	if err != nil {
-		panic(err)
+		http.Error(w, fmt.Sprintf("error in json encoding %v", err), http.StatusInternalServerError)
+		return;
 	}
 
 	_, err = w.Write(buf)
 	if err != nil {
-		panic(err)
+		http.Error(w, fmt.Sprintf("error when writing json %v", err), http.StatusInternalServerError)
+		return
 	}
 }
 

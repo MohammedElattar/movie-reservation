@@ -1,13 +1,10 @@
-package middleware
+package http
 
 import (
 	"net/http"
 	"sync"
 	"time"
 
-	httputil "github.com/MohammedElattar/movie-reservation/internal/transport/http"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/context"
-	"github.com/MohammedElattar/movie-reservation/internal/transport/http/locale"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/time/rate"
 )
@@ -23,9 +20,9 @@ func RateLimiter(r rate.Limit, b int) Middleware {
 		rateLimiters = make(map[string]*client)
 	)
 
-	return func(next httprouter.Handle, ctx *context.MiddlewareContext) httprouter.Handle {
+	return func(next httprouter.Handle, ctx *MiddlewareContext) httprouter.Handle {
 		return func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-			ip := httputil.GetIP(req)
+			ip := GetIP(req)
 
 			mu.Lock()
 			if _, ok := rateLimiters[ip]; !ok {
@@ -41,7 +38,7 @@ func RateLimiter(r rate.Limit, b int) Middleware {
 				ctx.JsonResponse.ErrorResponse(
 					req.Context(),
 					w,
-					ctx.JsonResponse.I18.Word(locale.FromContext(req.Context()), "too_many_requests"),
+					ctx.JsonResponse.I18.Word(LocaleFromContext(req.Context()), "too_many_requests"),
 					nil,
 					http.StatusTooManyRequests,
 				)
